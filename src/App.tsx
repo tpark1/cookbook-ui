@@ -4,8 +4,6 @@ import viteLogo from "./assets/vite.svg";
 import heroImg from "./assets/hero.png";
 import "./App.css";
 
-// TODO create .gitignore
-
 function App() {
   const [count, setCount] = useState(0);
 
