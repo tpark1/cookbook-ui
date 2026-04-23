@@ -3,13 +3,14 @@ import { supabase } from "../clients/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Plus } from "lucide-react";
+import { Badge, type BadgeVariants } from "@/components/ui/badge";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import TagsDialog from "@/components/tagsDialog";
+import { type Tag } from "../types/supabase";
 
 interface RecipeForm {
-  title: string;
+  name: string;
   category: string;
   ingredients: { name: string }[]; // Array of objects for RHF
   recipeImage: FileList;
@@ -18,6 +19,7 @@ interface RecipeForm {
 const NewRecipePage = () => {
   const navigate = useNavigate();
   const [tagsVisible, setTagsVisible] = useState(false);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   const {
     register,
@@ -46,7 +48,7 @@ const NewRecipePage = () => {
       .from("recipes") // The table name
       .insert([
         {
-          name: data.title,
+          name: data.name,
           ingredients: ingredientList, // Now a simple text array
           // instructions: data.instructions, (add other fields here)
         },
@@ -70,22 +72,40 @@ const NewRecipePage = () => {
 
       {/* --- Basic Text Input --- */}
       <div>
-        <label className="block font-medium">Recipe Title</label>
+        <Label>Recipe Name</Label>
         <input
-          {...register("title", { required: "Title is required" })}
-          className={`w-full border p-2 rounded ${errors.title ? "border-red-500" : "border-gray-300"}`}
+          {...register("name", { required: "Name is required" })}
+          className={`w-full border p-2 rounded ${errors.name ? "border-red-500" : "border-gray-300"}`}
           placeholder="Grandma's Chili"
         />
       </div>
-      {errors.title && (
-        <span className="text-red-500 text-sm mt-1">
-          {errors.title.message}
-        </span>
+      {errors.name && (
+        <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>
       )}
 
       {/* Tags section */}
-      <div>
-        <Label>Tags</Label>
+      <Label>Tags</Label>
+      <div className="flex gap-2">
+        {tags
+          .sort((a, b) =>
+            a.name !== null && b.name !== null
+              ? a.name.localeCompare(b.name)
+              : 0,
+          )
+          .map((tag) => {
+            return (
+              <Badge
+                key={tag.id}
+                variant={(tag.color as BadgeVariants["variant"]) ?? "default"}
+                onClick={() => {
+                  setTags(tags.filter((t) => t.id !== tag.id));
+                }}
+              >
+                <X />
+                {tag.name}
+              </Badge>
+            );
+          })}
         <Badge
           onClick={() => {
             console.log("badge clicked");
@@ -93,18 +113,19 @@ const NewRecipePage = () => {
           }}
         >
           <Plus />
-          Add tag
+          Add tags
         </Badge>
       </div>
 
       <TagsDialog
         open={tagsVisible}
         closeDialog={() => setTagsVisible(false)}
+        saveTags={setTags}
       />
 
       {/* --- Dynamic Ingredients List --- */}
       <div className="space-y-2">
-        <label className="block font-medium">Ingredients</label>
+        <Label className="block font-medium">Ingredients</Label>
         {fields.map((field, index) => (
           <div key={field.id} className="flex gap-2">
             <input
@@ -117,7 +138,7 @@ const NewRecipePage = () => {
               variant="destructiveNoBackground"
               onClick={() => remove(index)}
             >
-              ✕
+              <X />
             </Button>
           </div>
         ))}
@@ -126,13 +147,13 @@ const NewRecipePage = () => {
           variant="text"
           onClick={() => append({ name: "" })}
         >
-          + Add Ingredient
+          <Plus /> Add Ingredient
         </Button>
       </div>
 
       {/* --- File Input (The future photo) --- */}
       <div>
-        <label className="block font-medium">Recipe Photo</label>
+        <Label className="block font-medium">Recipe Photo</Label>
         <input
           type="file"
           {...register("recipeImage")}

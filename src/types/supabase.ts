@@ -250,3 +250,4 @@ export const Constants = {
 } as const;
 
 export type Recipe = Database["public"]["Tables"]["recipes"]["Row"];
+export type Tag = Database["public"]["Tables"]["tags"]["Row"];
