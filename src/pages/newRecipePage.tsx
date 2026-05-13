@@ -3,11 +3,9 @@ import { supabase } from "../clients/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge, type BadgeVariants } from "@/components/ui/badge";
 import { Plus, X } from "lucide-react";
-import { useState } from "react";
-import TagsDialog from "@/components/tagsDialog";
-import { type Tag } from "../types/supabase";
+
+import { TagsSection } from "@/components/tagsSection";
 
 interface RecipeForm {
   name: string;
@@ -18,8 +16,6 @@ interface RecipeForm {
 
 const NewRecipePage = () => {
   const navigate = useNavigate();
-  const [tagsVisible, setTagsVisible] = useState(false);
-  const [tags, setTags] = useState<Tag[]>([]);
 
   const {
     register,
@@ -83,45 +79,7 @@ const NewRecipePage = () => {
         <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>
       )}
 
-      {/* Tags section */}
-      <Label>Tags</Label>
-      <div className="flex gap-2">
-        {tags
-          .sort((a, b) =>
-            a.name !== null && b.name !== null
-              ? a.name.localeCompare(b.name)
-              : 0,
-          )
-          .map((tag) => {
-            return (
-              <Badge
-                key={tag.id}
-                variant={(tag.color as BadgeVariants["variant"]) ?? "default"}
-                onClick={() => {
-                  setTags(tags.filter((t) => t.id !== tag.id));
-                }}
-              >
-                <X />
-                {tag.name}
-              </Badge>
-            );
-          })}
-        <Badge
-          onClick={() => {
-            console.log("badge clicked");
-            setTagsVisible(true);
-          }}
-        >
-          <Plus />
-          Add tags
-        </Badge>
-      </div>
-
-      <TagsDialog
-        open={tagsVisible}
-        closeDialog={() => setTagsVisible(false)}
-        saveTags={setTags}
-      />
+      <TagsSection />
 
       {/* --- Dynamic Ingredients List --- */}
       <div className="space-y-2">

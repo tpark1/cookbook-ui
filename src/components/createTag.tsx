@@ -3,18 +3,20 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { supabase } from "@/clients/supabaseClient";
 import type { Tag } from "@/types/supabase";
+import { ColorPicker } from "./colorPicker";
 
 type CreateTagProps = {
   triggerUpdate: (tag: Tag) => void;
 };
 
-const CreateTag = ({ triggerUpdate }: CreateTagProps) => {
+export function CreateTag({ triggerUpdate }: CreateTagProps) {
   const [tagName, setTagName] = useState("");
+  const [color, setColor] = useState("black");
 
   const saveTag = async () => {
     const { data, error } = await supabase
       .from("tags")
-      .insert([{ name: tagName }])
+      .insert([{ name: tagName, color }])
       .select();
 
     if (error) {
@@ -24,6 +26,8 @@ const CreateTag = ({ triggerUpdate }: CreateTagProps) => {
       triggerUpdate(data[0]);
     }
   };
+
+  console.log("color", color);
 
   return (
     <>
@@ -38,10 +42,9 @@ const CreateTag = ({ triggerUpdate }: CreateTagProps) => {
           value={tagName}
           onChange={(e) => setTagName(e.target.value)}
         />
+        <ColorPicker onColorSelect={setColor} />
         <Button onClick={saveTag}>Create tag</Button>
       </section>
     </>
   );
-};
-
-export default CreateTag;
+}
