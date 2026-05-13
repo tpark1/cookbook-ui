@@ -6,11 +6,14 @@ import { Label } from "@/components/ui/label";
 import { Plus, X } from "lucide-react";
 
 import { TagsSection } from "@/components/tagsSection";
+import type { Tag } from "@/types/supabase";
 
 interface RecipeForm {
   name: string;
   category: string;
   ingredients: { name: string }[]; // Array of objects for RHF
+  directions: { step: string }[];
+  tags: number[];
   recipeImage: FileList;
 }
 
@@ -21,42 +24,84 @@ const NewRecipePage = () => {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<RecipeForm>({
     mode: "onBlur",
     defaultValues: {
       ingredients: [{ name: "" }],
+      directions: [{ step: "" }],
+      tags: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const handleTagsChange = (selectedTags: Tag[]) => {
+    const tagNames = selectedTags.map((t) => t.id);
+    setValue("tags", tagNames);
+  };
+
+  const {
+    fields: ingredientFields,
+    append: appendIngredient,
+    remove: removeIngredient,
+  } = useFieldArray({
     control,
     name: "ingredients",
   });
 
+  const {
+    fields: directionFields,
+    append: appendDirection,
+    remove: removeDirection,
+  } = useFieldArray({
+    control,
+    name: "directions",
+  });
+
   const onSubmit = async (data: RecipeForm) => {
     console.log("Form Data:", data);
-    // 1. Transform the ingredients from [{name: 'flour'}] to ['flour']
+    // Get fields
     const ingredientList = data.ingredients.map((ing) => ing.name);
+    const directionsList = data.directions.map((dir) => dir.step);
+    const tagList = data.tags;
+    console.log("tagList", tagList);
 
-    // 2. The "SQL" Query (via Supabase Client)
-    const { data: result, error } = await supabase
-      .from("recipes") // The table name
+    const { data: recipeResult, error: recipeError } = await supabase
+      .from("recipes")
       .insert([
         {
           name: data.name,
-          ingredients: ingredientList, // Now a simple text array
-          // instructions: data.instructions, (add other fields here)
+          ingredients: ingredientList,
+          directions: directionsList,
         },
       ])
-      .select(); // This returns the newly created row
+      .select()
+      .single();
 
-    if (error) {
-      console.error("Error saving recipe:", error.message);
-    } else {
-      console.log("Success! Saved:", result);
-      navigate("/");
+    if (recipeError) {
+      console.error("Error saving recipe:", recipeError.message);
+      return;
     }
+
+    const newRecipeId = recipeResult.id;
+    if (data.tags.length > 0) {
+      // Format the data for the recipe_tags table
+      const joinTableEntries = data.tags.map((tag) => ({
+        id: newRecipeId,
+        tag_id: tag,
+      }));
+
+      const { error: tagError } = await supabase
+        .from("recipe_tags")
+        .insert(joinTableEntries);
+
+      if (tagError) {
+        console.error("Error linking tags:", tagError.message);
+      }
+    }
+
+    console.log("Success! Recipe and Tags linked.");
+    navigate("/");
   };
 
   return (
@@ -79,12 +124,12 @@ const NewRecipePage = () => {
         <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>
       )}
 
-      <TagsSection />
+      <TagsSection onTagsSelected={handleTagsChange} />
 
       {/* --- Dynamic Ingredients List --- */}
       <div className="space-y-2">
         <Label className="block font-medium">Ingredients</Label>
-        {fields.map((field, index) => (
+        {ingredientFields.map((field, index) => (
           <div key={field.id} className="flex gap-2">
             <input
               {...register(`ingredients.${index}.name` as const)}
@@ -94,7 +139,7 @@ const NewRecipePage = () => {
             <Button
               type="button"
               variant="destructiveNoBackground"
-              onClick={() => remove(index)}
+              onClick={() => removeIngredient(index)}
             >
               <X />
             </Button>
@@ -103,9 +148,40 @@ const NewRecipePage = () => {
         <Button
           type="button"
           variant="text"
-          onClick={() => append({ name: "" })}
+          onClick={() => appendIngredient({ name: "" })}
         >
           <Plus /> Add Ingredient
+        </Button>
+      </div>
+
+      {/* --- Dynamic Directions List --- */}
+      <div className="space-y-2">
+        <Label className="block font-medium">Directions</Label>
+        {directionFields.map((field, index) => (
+          <div key={field.id} className="flex gap-2">
+            <div className="flex items-center justify-center bg-gray-100 text-gray-600 font-bold rounded-full h-10 w-10 shrink-0 mt-1">
+              {index + 1}
+            </div>
+            <input
+              {...register(`directions.${index}.step` as const)}
+              className="flex-1 border p-2 rounded"
+              placeholder="e.g. Chop onions, peppers, and garlic"
+            />
+            <Button
+              type="button"
+              variant="destructiveNoBackground"
+              onClick={() => removeDirection(index)}
+            >
+              <X />
+            </Button>
+          </div>
+        ))}
+        <Button
+          type="button"
+          variant="text"
+          onClick={() => appendDirection({ step: "" })}
+        >
+          <Plus /> Add Direction
         </Button>
       </div>
 

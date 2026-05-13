@@ -19,20 +19,38 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onCreateTag: (newTag: string) => void;
+  onSelectionChange: (selectedRows: TData[]) => void;
 }
+
+const coreRowModel = getCoreRowModel();
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onCreateTag,
+  onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [newTagName, setNewTagName] = useState("");
   const table = useReactTable({
     data,
     columns,
-    getCoreRowModel: getCoreRowModel(),
-    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: coreRowModel,
+    onRowSelectionChange: (updater) => {
+      // 1. Standard row selection update
+      const nextSelection =
+        typeof updater === "function" ? updater(rowSelection) : updater;
+      setRowSelection(nextSelection);
+
+      // 2. Map the selection IDs back to the actual data objects and notify parent
+      if (onSelectionChange) {
+        // This gets the actual data objects for the selected rows
+        const selectedData = Object.keys(nextSelection).map(
+          (index) => data[Number(index)],
+        );
+        onSelectionChange(selectedData);
+      }
+    },
     state: {
       rowSelection,
     },
@@ -41,7 +59,7 @@ export function DataTable<TData, TValue>({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && newTagName.trim() !== "") {
       onCreateTag(newTagName);
-      setNewTagName(""); // need to refresh tag table
+      setNewTagName("");
     }
   };
 

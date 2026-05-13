@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { type Tag } from "../types/supabase";
 import { supabase } from "@/clients/supabaseClient";
 import {
@@ -11,6 +11,10 @@ import {
 import { DataTable } from "./tagsTable";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "./ui/checkbox";
+
+type TagsSectionProps = {
+  onTagsSelected: (tags: Tag[]) => void;
+};
 
 const columns: ColumnDef<Tag>[] = [
   {
@@ -42,23 +46,27 @@ const columns: ColumnDef<Tag>[] = [
   // TODO add column showing how many other recipes have this tag maybe
 ];
 
-export function TagsSection() {
+export function TagsSection({ onTagsSelected }: TagsSectionProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
 
-  useEffect(() => {
-    async function fetchTags() {
-      const { data, error } = await supabase.from("tags").select("*");
-      if (error) {
-        console.log("error fetching tags", error);
-      } else {
-        if (data !== null) {
-          console.log("data", data);
-          setAvailableTags(data);
-        }
+  const fetchTags = useCallback(async () => {
+    const { data, error } = await supabase.from("tags").select("*");
+    if (error) {
+      console.log("error fetching tags", error);
+    } else {
+      if (data !== null) {
+        console.log("data", data);
+        setAvailableTags(data);
       }
     }
-    fetchTags();
-  }, [availableTags]);
+  }, []);
+
+  useEffect(() => {
+    const load = async () => {
+      await fetchTags();
+    };
+    load();
+  }, [fetchTags]);
 
   const saveTag = async (tagName: string) => {
     const { data, error } = await supabase
@@ -68,9 +76,9 @@ export function TagsSection() {
 
     if (error) {
       console.error("Error creating tag:", error.message);
-      setAvailableTags([]);
     } else {
       console.log("Success! Saved:", data);
+      fetchTags();
     }
   };
 
@@ -87,6 +95,7 @@ export function TagsSection() {
           columns={columns}
           data={availableTags}
           onCreateTag={saveTag}
+          onSelectionChange={onTagsSelected}
         />
       </CardContent>
     </Card>
