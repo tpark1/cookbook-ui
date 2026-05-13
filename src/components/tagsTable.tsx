@@ -13,17 +13,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState } from "react";
+import { Input } from "./ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onCreateTag: (newTag: string) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onCreateTag,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
+  const [newTagName, setNewTagName] = useState("");
   const table = useReactTable({
     data,
     columns,
@@ -33,6 +37,13 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
   });
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && newTagName.trim() !== "") {
+      onCreateTag(newTagName);
+      setNewTagName(""); // need to refresh tag table
+    }
+  };
 
   return (
     <div className="overflow-hidden rounded-md border">
@@ -76,6 +87,18 @@ export function DataTable<TData, TValue>({
               </TableCell>
             </TableRow>
           )}
+
+          <TableRow className="bg-muted/50">
+            <TableCell colSpan={columns.length} className="p-2">
+              <Input
+                placeholder="Type new tag and press Enter..."
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="h-8 border-dashed"
+              />
+            </TableCell>
+          </TableRow>
         </TableBody>
       </Table>
     </div>

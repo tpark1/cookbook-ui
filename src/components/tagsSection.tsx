@@ -58,7 +58,21 @@ export function TagsSection() {
       }
     }
     fetchTags();
-  }, []);
+  }, [availableTags]);
+
+  const saveTag = async (tagName: string) => {
+    const { data, error } = await supabase
+      .from("tags")
+      .insert([{ name: tagName }])
+      .select();
+
+    if (error) {
+      console.error("Error creating tag:", error.message);
+      setAvailableTags([]);
+    } else {
+      console.log("Success! Saved:", data);
+    }
+  };
 
   console.log("availableTags", availableTags);
 
@@ -69,7 +83,11 @@ export function TagsSection() {
         <CardDescription>Select tags to apply</CardDescription>
       </CardHeader>
       <CardContent>
-        <DataTable columns={columns} data={availableTags} />
+        <DataTable
+          columns={columns}
+          data={availableTags}
+          onCreateTag={saveTag}
+        />
       </CardContent>
     </Card>
   );
