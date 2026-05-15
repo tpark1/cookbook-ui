@@ -2,7 +2,8 @@
 
 todo list
 
+- Validation on cook and prep time and yield inputs (number inputs)
 - Testing adding tags on mobile
-- Performance on rapid selecting and deselecting of tags
-- hover/pressed states on badges
-- animations on badges
+- Support for multiple pics
+- Show preview of pic
+- Automatic conversion from weight to volume and vic versa

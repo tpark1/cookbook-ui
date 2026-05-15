@@ -7,14 +7,19 @@ import { Plus, X } from "lucide-react";
 
 import { TagsSection } from "@/components/tagsSection";
 import type { Tag } from "@/types/supabase";
+import { PicturePicker } from "@/components/picturePicker";
+import { uploadRecipeImage } from "@/lib/uploadRecipeImage";
 
-interface RecipeForm {
+export interface RecipeForm {
   name: string;
-  category: string;
+  recipeImage: FileList;
+  description?: string;
+  prepTime?: number;
+  cookTime?: number;
+  yield?: number;
+  tags: number[];
   ingredients: { name: string }[]; // Array of objects for RHF
   directions: { step: string }[];
-  tags: number[];
-  recipeImage: FileList;
 }
 
 const NewRecipePage = () => {
@@ -32,6 +37,10 @@ const NewRecipePage = () => {
       ingredients: [{ name: "" }],
       directions: [{ step: "" }],
       tags: [],
+      prepTime: undefined,
+      cookTime: undefined,
+      yield: undefined,
+      description: "",
     },
   });
 
@@ -60,11 +69,18 @@ const NewRecipePage = () => {
 
   const onSubmit = async (data: RecipeForm) => {
     console.log("Form Data:", data);
+    let imageUrl = "";
+    if (data.recipeImage) {
+      imageUrl = await uploadRecipeImage(data.recipeImage[0]);
+    }
+
     // Get fields
     const ingredientList = data.ingredients.map((ing) => ing.name);
     const directionsList = data.directions.map((dir) => dir.step);
     const tagList = data.tags;
-    console.log("tagList", tagList);
+    const cookTime = data.cookTime;
+    const prepTime = data.prepTime;
+    const recipeYield = data.yield;
 
     const { data: recipeResult, error: recipeError } = await supabase
       .from("recipes")
@@ -73,6 +89,10 @@ const NewRecipePage = () => {
           name: data.name,
           ingredients: ingredientList,
           directions: directionsList,
+          cook_time: cookTime,
+          prep_time: prepTime,
+          yield: recipeYield,
+          picture_urls: [imageUrl],
         },
       ])
       .select()
@@ -84,7 +104,7 @@ const NewRecipePage = () => {
     }
 
     const newRecipeId = recipeResult.id;
-    if (data.tags.length > 0) {
+    if (tagList.length > 0) {
       // Format the data for the recipe_tags table
       const joinTableEntries = data.tags.map((tag) => ({
         id: newRecipeId,
@@ -124,7 +144,65 @@ const NewRecipePage = () => {
         <span className="text-red-500 text-sm mt-1">{errors.name.message}</span>
       )}
 
+      <PicturePicker register={register} />
+
       <TagsSection onTagsSelected={handleTagsChange} />
+
+      <Label className="block font-medium">Prep time</Label>
+      <input
+        id="prepTime"
+        type="number"
+        {...register("prepTime", {
+          min: { value: 1, message: "Must be at least 1 minute" },
+          valueAsNumber: true,
+        })}
+        className={`w-full border p-2 rounded ${errors.prepTime ? "border-red-500" : "border-gray-300"}`}
+      />
+      {errors.prepTime && (
+        <span className="text-red-500 text-sm mt-1">
+          {errors.prepTime.message}
+        </span>
+      )}
+
+      <Label className="block font-medium">Cook time</Label>
+      <input
+        id="cookTime"
+        type="number"
+        {...register("cookTime", {
+          min: { value: 1, message: "Must be at least 1 minute" },
+          valueAsNumber: true,
+        })}
+        className={`w-full border p-2 rounded ${errors.cookTime ? "border-red-500" : "border-gray-300"}`}
+      />
+      {errors.cookTime && (
+        <span className="text-red-500 text-sm mt-1">
+          {errors.cookTime.message}
+        </span>
+      )}
+
+      <Label className="block font-medium">Yield</Label>
+      <input
+        id="yield"
+        type="number"
+        {...register("yield", {
+          min: { value: 1, message: "Must be at least 1" },
+          valueAsNumber: true,
+        })}
+        className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
+      />
+      {errors.yield && (
+        <span className="text-red-500 text-sm mt-1">
+          {errors.yield.message}
+        </span>
+      )}
+
+      <Label className="block font-medium">Description</Label>
+      <textarea
+        id="description"
+        {...register("description", {})}
+        placeholder="Description"
+        className="w-full border p-2 rounded border-gray-300"
+      />
 
       {/* --- Dynamic Ingredients List --- */}
       <div className="space-y-2">
@@ -183,16 +261,6 @@ const NewRecipePage = () => {
         >
           <Plus /> Add Direction
         </Button>
-      </div>
-
-      {/* --- File Input (The future photo) --- */}
-      <div>
-        <Label className="block font-medium">Recipe Photo</Label>
-        <input
-          type="file"
-          {...register("recipeImage")}
-          className="w-full text-sm text-gray-500"
-        />
       </div>
 
       <Button type="submit" variant="default">
