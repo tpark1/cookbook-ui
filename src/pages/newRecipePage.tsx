@@ -135,7 +135,7 @@ const NewRecipePage = () => {
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => console.log("oww")}
+          onClick={() => navigate("/")}
         >
           <X />
         </Button>
