@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../clients/supabaseClient";
 import { type Recipe } from "../types/supabase";
 import { Button } from "@/components/ui/button";
+import { RecipeCard } from "@/components/recipeCard";
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -36,12 +37,8 @@ const HomePage = () => {
       </Button>
       <section className="grid grid-cols-2 gap-4">
         {recipes.map((recipe) => {
-          return <div key={recipe.id}>{recipe.name}</div>;
+          return <RecipeCard key={recipe.id} recipe={recipe} />;
         })}
-        <div>test1</div>
-        <div>test2</div>
-        <div>test3</div>
-        <div>test4</div>
       </section>
     </div>
   );

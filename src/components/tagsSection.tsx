@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Tag } from "../types/supabase";
 import { supabase } from "@/clients/supabaseClient";
 import {
@@ -13,6 +13,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "./ui/checkbox";
 
 type TagsSectionProps = {
+  initialTags: number[];
   onTagsSelected: (tags: Tag[]) => void;
 };
 
@@ -46,8 +47,9 @@ const columns: ColumnDef<Tag>[] = [
   // TODO add column showing how many other recipes have this tag maybe
 ];
 
-export function TagsSection({ onTagsSelected }: TagsSectionProps) {
+export function TagsSection({ initialTags, onTagsSelected }: TagsSectionProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
+  console.log("initialTags", initialTags);
 
   const fetchTags = useCallback(async () => {
     const { data, error } = await supabase.from("tags").select("*");
@@ -67,6 +69,20 @@ export function TagsSection({ onTagsSelected }: TagsSectionProps) {
     };
     load();
   }, [fetchTags]);
+
+  const initialRowSelection = useMemo(() => {
+    const selection: Record<string, boolean> = {};
+
+    if (!availableTags.length || !initialTags.length) return selection;
+
+    availableTags.forEach((tag, index) => {
+      if (initialTags.includes(tag.id)) {
+        selection[index] = true;
+      }
+    });
+
+    return selection;
+  }, [availableTags, initialTags]);
 
   const saveTag = async (tagName: string) => {
     const { data, error } = await supabase
@@ -94,6 +110,7 @@ export function TagsSection({ onTagsSelected }: TagsSectionProps) {
         <DataTable
           columns={columns}
           data={availableTags}
+          initialRowSelection={initialRowSelection}
           onCreateTag={saveTag}
           onSelectionChange={onTagsSelected}
         />

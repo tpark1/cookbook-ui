@@ -4,12 +4,27 @@ import { Label } from "./ui/label";
 import type { RecipeForm } from "@/pages/newRecipePage";
 
 type PicturePickerProps = {
+  existingImageUrl?: string;
   register: UseFormRegister<RecipeForm>;
 };
 
-export function PicturePicker({ register }: PicturePickerProps) {
+export function PicturePicker({
+  existingImageUrl,
+  register,
+}: PicturePickerProps) {
+  console.log("existingImageUrl", existingImageUrl);
   const [fileName, setFileName] = useState<string | null>(null);
   const { ref, onChange, ...rest } = register("recipeImage");
+
+  console.log("fileName", fileName);
+
+  let displayValue = "No file chosen";
+
+  if (fileName) {
+    displayValue = fileName;
+  } else if (existingImageUrl) {
+    displayValue = existingImageUrl.split("/").pop() ?? "Existing Image";
+  }
 
   return (
     <div>
@@ -21,9 +36,7 @@ export function PicturePicker({ register }: PicturePickerProps) {
         >
           Browse
         </label>
-        <span className="text-sm text-gray-500">
-          {fileName ?? "No file chosen"}
-        </span>
+        <span className="text-sm text-gray-500">{displayValue}</span>
       </div>
       <input
         id="recipeImage"

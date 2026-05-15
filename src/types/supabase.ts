@@ -251,3 +251,4 @@ export const Constants = {
 
 export type Recipe = Database["public"]["Tables"]["recipes"]["Row"];
 export type Tag = Database["public"]["Tables"]["tags"]["Row"];
+export type Recipe_Tag = Database["public"]["Tables"]["recipe_tags"]["Row"];

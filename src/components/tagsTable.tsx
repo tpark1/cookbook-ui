@@ -12,12 +12,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "./ui/input";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  initialRowSelection: Record<string, boolean>;
   onCreateTag: (newTag: string) => void;
   onSelectionChange: (selectedRows: TData[]) => void;
 }
@@ -27,11 +28,20 @@ const coreRowModel = getCoreRowModel();
 export function DataTable<TData, TValue>({
   columns,
   data,
+  initialRowSelection,
   onCreateTag,
   onSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [newTagName, setNewTagName] = useState("");
+  console.log("initialRowSelection", initialRowSelection);
+
+  useEffect(() => {
+    if (Object.keys(initialRowSelection).length > 0) {
+      setRowSelection(initialRowSelection);
+    }
+  }, [initialRowSelection]);
+
   const table = useReactTable({
     data,
     columns,
@@ -40,6 +50,7 @@ export function DataTable<TData, TValue>({
       // 1. Standard row selection update
       const nextSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
+      console.log("nextSelection", nextSelection);
       setRowSelection(nextSelection);
 
       // 2. Map the selection IDs back to the actual data objects and notify parent
