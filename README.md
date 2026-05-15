@@ -2,6 +2,7 @@
 
 todo list
 
+- Add button in create new recipe to go back to home
 - Validation on cook and prep time and yield inputs (number inputs)
 - Testing adding tags on mobile
 - Support for multiple pics

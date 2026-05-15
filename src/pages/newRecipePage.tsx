@@ -129,7 +129,17 @@ const NewRecipePage = () => {
       onSubmit={handleSubmit(onSubmit)}
       className="max-w-2xl mx-auto p-6 space-y-6"
     >
-      <h1 className="text-2xl font-bold">Add New Recipe</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Add New Recipe</h1>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => console.log("oww")}
+        >
+          <X />
+        </Button>
+      </div>
 
       {/* --- Basic Text Input --- */}
       <div>
