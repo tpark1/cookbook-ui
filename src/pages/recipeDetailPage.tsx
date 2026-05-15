@@ -1,6 +1,7 @@
 import { supabase } from "@/clients/supabaseClient";
 import { Button } from "@/components/ui/button";
 import type { RecipeWithTags } from "@/types/recipeWithTags";
+import type { Tag } from "@/types/supabase";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -13,10 +14,16 @@ const RecipeDetailPage = () => {
     async function fetchRecipe() {
       const { data, error } = await supabase
         .from("recipes")
-        .select("*, recipe_tags(tags(id, name))")
+        .select("*, recipe_tags(tags(*))")
         .eq("id", id)
         .single();
-      if (!error) setRecipe(data);
+      if (!error) {
+        setRecipe({
+          ...data,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          tags: data.recipe_tags.map((rt: any) => rt.tags),
+        });
+      }
     }
     fetchRecipe();
   }, [id]);
@@ -51,14 +58,14 @@ const RecipeDetailPage = () => {
       </div>
 
       {/* Tags */}
-      {recipe.recipe_tags && recipe.recipe_tags.length > 0 && (
+      {recipe.tags && recipe.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {recipe.recipe_tags.map(({ tags }) => (
+          {recipe.tags.map((tag: Tag) => (
             <span
-              key={tags.id}
+              key={tag.id}
               className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
             >
-              {tags.name}
+              {tag.name}
             </span>
           ))}
         </div>

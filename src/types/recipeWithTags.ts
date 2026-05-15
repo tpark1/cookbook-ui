@@ -1,5 +1,5 @@
-import type { Recipe } from "./supabase";
+import type { Recipe, Tag } from "./supabase";
 
 export type RecipeWithTags = Recipe & {
-  recipe_tags: { tags: { id: number; name: string } }[];
+  tags: Tag[];
 };

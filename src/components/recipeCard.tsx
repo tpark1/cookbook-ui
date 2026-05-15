@@ -1,11 +1,12 @@
-import type { Recipe } from "@/types/supabase";
+import type { Recipe, Tag } from "@/types/supabase";
 import { Link } from "react-router-dom";
 
 type RecipeCardProps = {
   recipe: Recipe;
+  tags: Tag[];
 };
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, tags }: RecipeCardProps) {
   return (
     <Link to={`/recipes/${recipe.id}`}>
       <div className="rounded-md border p-4 hover:bg-muted transition-colors">
@@ -20,6 +21,18 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           </div>
         )}
         <h2 className="mt-2 font-semibold">{recipe.name}</h2>
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {tags.map((tag) => (
+              <span
+                key={`${recipe.id}-${tag.id}`}
+                className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground"
+              >
+                {tag.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </Link>
   );
