@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { supabase } from "../clients/supabaseClient";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { GripVertical, Plus, X } from "lucide-react";
 import { TagsSection } from "@/components/tagsSection";
 import type { Tag } from "@/types/supabase";
 import { PicturePicker } from "@/components/picturePicker";
@@ -18,6 +18,8 @@ const EditRecipePage = () => {
     undefined,
   );
   const [initialTags, setInitialTags] = useState<number[]>([]);
+  const dragIndexIngredients = useRef<number>(0);
+  const dragIndexDirections = useRef<number>(0);
 
   const {
     register,
@@ -65,6 +67,7 @@ const EditRecipePage = () => {
           ? data.directions.map((step: string) => ({ step }))
           : [{ step: "" }],
         tags: existingTags,
+        source: data.source,
       });
 
       // Store existing image URL so we can keep it if no new image is picked
@@ -90,12 +93,14 @@ const EditRecipePage = () => {
     fields: ingredientFields,
     append: appendIngredient,
     remove: removeIngredient,
+    move: moveIngredient,
   } = useFieldArray({ control, name: "ingredients" });
 
   const {
     fields: directionFields,
     append: appendDirection,
     remove: removeDirection,
+    move: moveDirection,
   } = useFieldArray({ control, name: "directions" });
 
   const onSubmit = async (data: RecipeForm) => {
@@ -105,19 +110,18 @@ const EditRecipePage = () => {
       imageUrl = await uploadRecipeImage(data.recipeImage[0]);
     }
 
-    console.log("new data", data);
-
     const { error: recipeError } = await supabase
       .from("recipes")
       .update({
         name: data.name,
         description: data.description,
-        ingredients: data.ingredients.map((i) => i.name),
-        directions: data.directions.map((d) => d.step),
+        ingredients: data.ingredients.map((i) => i.name.trim()),
+        directions: data.directions.map((d) => d.step.trim()),
         cook_time: data.cookTime,
         prep_time: data.prepTime,
         yield: data.yield,
         picture_urls: [imageUrl],
+        sources: data.source,
       })
       .eq("id", id);
 
@@ -182,21 +186,21 @@ const EditRecipePage = () => {
       <Label className="block font-medium">Prep time</Label>
       <input
         type="number"
-        {...register("prepTime", { min: 1, valueAsNumber: true })}
+        {...register("prepTime", { min: 0, valueAsNumber: true })}
         className={`w-full border p-2 rounded ${errors.prepTime ? "border-red-500" : "border-gray-300"}`}
       />
 
       <Label className="block font-medium">Cook time</Label>
       <input
         type="number"
-        {...register("cookTime", { min: 1, valueAsNumber: true })}
+        {...register("cookTime", { min: 0, valueAsNumber: true })}
         className={`w-full border p-2 rounded ${errors.cookTime ? "border-red-500" : "border-gray-300"}`}
       />
 
       <Label className="block font-medium">Yield</Label>
       <input
         type="number"
-        {...register("yield", { min: 1, valueAsNumber: true })}
+        {...register("yield", { min: 0, valueAsNumber: true })}
         className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
       />
 
@@ -209,7 +213,15 @@ const EditRecipePage = () => {
       <div className="space-y-2">
         <Label className="block font-medium">Ingredients</Label>
         {ingredientFields.map((field, index) => (
-          <div key={field.id} className="flex gap-2">
+          <div
+            key={field.id}
+            className="flex gap-2"
+            draggable
+            onDragStart={() => (dragIndexIngredients.current = index)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => moveIngredient(dragIndexIngredients.current, index)}
+          >
+            <GripVertical className="text-muted-foreground self-center shrink-0" />
             <input
               {...register(`ingredients.${index}.name` as const)}
               className="flex-1 border p-2 rounded"
@@ -236,7 +248,15 @@ const EditRecipePage = () => {
       <div className="space-y-2">
         <Label className="block font-medium">Directions</Label>
         {directionFields.map((field, index) => (
-          <div key={field.id} className="flex gap-2">
+          <div
+            key={field.id}
+            className="flex gap-2"
+            draggable
+            onDragStart={() => (dragIndexDirections.current = index)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => moveDirection(dragIndexDirections.current, index)}
+          >
+            <GripVertical className="text-muted-foreground self-center shrink-0" />
             <div className="flex items-center justify-center bg-gray-100 text-gray-600 font-bold rounded-full h-10 w-10 shrink-0 mt-1">
               {index + 1}
             </div>
@@ -262,6 +282,13 @@ const EditRecipePage = () => {
           <Plus /> Add Direction
         </Button>
       </div>
+
+      <Label className="block font-medium">Source</Label>
+      <input
+        id="source"
+        {...register("source", {})}
+        className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
+      />
 
       <Button type="submit">Save Changes</Button>
     </form>

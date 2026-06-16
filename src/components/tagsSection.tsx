@@ -49,7 +49,6 @@ const columns: ColumnDef<Tag>[] = [
 
 export function TagsSection({ initialTags, onTagsSelected }: TagsSectionProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  console.log("initialTags", initialTags);
 
   const fetchTags = useCallback(async () => {
     const { data, error } = await supabase.from("tags").select("*");
@@ -57,7 +56,6 @@ export function TagsSection({ initialTags, onTagsSelected }: TagsSectionProps) {
       console.log("error fetching tags", error);
     } else {
       if (data !== null) {
-        console.log("data", data);
         setAvailableTags(data);
       }
     }
@@ -97,8 +95,6 @@ export function TagsSection({ initialTags, onTagsSelected }: TagsSectionProps) {
       fetchTags();
     }
   };
-
-  console.log("availableTags", availableTags);
 
   return (
     <Card>

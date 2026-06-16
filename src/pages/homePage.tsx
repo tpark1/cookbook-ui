@@ -26,6 +26,7 @@ const HomePage = () => {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           tags: recipe.recipe_tags.map((rt: any) => rt.tags),
         }));
+        recipesWithTags.sort((a, b) => a.name.localeCompare(b.name));
         setRecipes(recipesWithTags);
         setFiltered(recipesWithTags);
       }

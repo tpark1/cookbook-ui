@@ -16,10 +16,11 @@ export interface RecipeForm {
   description?: string;
   prepTime?: number;
   cookTime?: number;
-  yield?: number;
+  yield?: string;
   tags: number[];
   ingredients: { name: string }[]; // Array of objects for RHF
   directions: { step: string }[];
+  source: string;
 }
 
 const NewRecipePage = () => {
@@ -41,6 +42,7 @@ const NewRecipePage = () => {
       cookTime: undefined,
       yield: undefined,
       description: "",
+      source: "",
     },
   });
 
@@ -75,12 +77,13 @@ const NewRecipePage = () => {
     }
 
     // Get fields
-    const ingredientList = data.ingredients.map((ing) => ing.name);
-    const directionsList = data.directions.map((dir) => dir.step);
+    const ingredientList = data.ingredients.map((ing) => ing.name.trim());
+    const directionsList = data.directions.map((dir) => dir.step.trim());
     const tagList = data.tags;
     const cookTime = data.cookTime;
     const prepTime = data.prepTime;
     const recipeYield = data.yield;
+    const source = data.source;
 
     const { data: recipeResult, error: recipeError } = await supabase
       .from("recipes")
@@ -93,6 +96,7 @@ const NewRecipePage = () => {
           prep_time: prepTime,
           yield: recipeYield,
           picture_urls: [imageUrl],
+          sources: source,
         },
       ])
       .select()
@@ -163,7 +167,7 @@ const NewRecipePage = () => {
         id="prepTime"
         type="number"
         {...register("prepTime", {
-          min: { value: 1, message: "Must be at least 1 minute" },
+          min: { value: 0, message: "Must be at least 0" },
           valueAsNumber: true,
         })}
         className={`w-full border p-2 rounded ${errors.prepTime ? "border-red-500" : "border-gray-300"}`}
@@ -179,7 +183,7 @@ const NewRecipePage = () => {
         id="cookTime"
         type="number"
         {...register("cookTime", {
-          min: { value: 1, message: "Must be at least 1 minute" },
+          min: { value: 0, message: "Must be at least 0" },
           valueAsNumber: true,
         })}
         className={`w-full border p-2 rounded ${errors.cookTime ? "border-red-500" : "border-gray-300"}`}
@@ -193,18 +197,9 @@ const NewRecipePage = () => {
       <Label className="block font-medium">Yield</Label>
       <input
         id="yield"
-        type="number"
-        {...register("yield", {
-          min: { value: 1, message: "Must be at least 1" },
-          valueAsNumber: true,
-        })}
+        {...register("yield", {})}
         className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
       />
-      {errors.yield && (
-        <span className="text-red-500 text-sm mt-1">
-          {errors.yield.message}
-        </span>
-      )}
 
       <Label className="block font-medium">Description</Label>
       <textarea
@@ -272,6 +267,13 @@ const NewRecipePage = () => {
           <Plus /> Add Direction
         </Button>
       </div>
+
+      <Label className="block font-medium">Source</Label>
+      <input
+        id="source"
+        {...register("source", {})}
+        className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
+      />
 
       <Button type="submit" variant="default">
         Save

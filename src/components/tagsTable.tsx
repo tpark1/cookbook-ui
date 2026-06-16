@@ -34,7 +34,6 @@ export function DataTable<TData, TValue>({
 }: DataTableProps<TData, TValue>) {
   const [rowSelection, setRowSelection] = useState({});
   const [newTagName, setNewTagName] = useState("");
-  console.log("initialRowSelection", initialRowSelection);
 
   useEffect(() => {
     if (Object.keys(initialRowSelection).length > 0) {
@@ -50,7 +49,6 @@ export function DataTable<TData, TValue>({
       // 1. Standard row selection update
       const nextSelection =
         typeof updater === "function" ? updater(rowSelection) : updater;
-      console.log("nextSelection", nextSelection);
       setRowSelection(nextSelection);
 
       // 2. Map the selection IDs back to the actual data objects and notify parent

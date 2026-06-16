@@ -73,19 +73,19 @@ const RecipeDetailPage = () => {
 
       {/* Time & Yield */}
       <div className="flex gap-6 rounded-lg border p-4 text-sm">
-        {recipe.prep_time && (
+        {recipe.prep_time !== null && (
           <div>
             <p className="font-medium">Prep Time</p>
             <p className="text-muted-foreground">{recipe.prep_time} min</p>
           </div>
         )}
-        {recipe.cook_time && (
+        {recipe.cook_time !== null && (
           <div>
             <p className="font-medium">Cook Time</p>
             <p className="text-muted-foreground">{recipe.cook_time} min</p>
           </div>
         )}
-        {recipe.prep_time && recipe.cook_time && (
+        {recipe.prep_time !== null && recipe.cook_time !== null && (
           <div>
             <p className="font-medium">Total Time</p>
             <p className="text-muted-foreground">
@@ -93,7 +93,7 @@ const RecipeDetailPage = () => {
             </p>
           </div>
         )}
-        {recipe.yield && (
+        {recipe.yield !== undefined && (
           <div>
             <p className="font-medium">Yield</p>
             <p className="text-muted-foreground">{recipe.yield} servings</p>

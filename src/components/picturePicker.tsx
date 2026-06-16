@@ -12,12 +12,8 @@ export function PicturePicker({
   existingImageUrl,
   register,
 }: PicturePickerProps) {
-  console.log("existingImageUrl", existingImageUrl);
   const [fileName, setFileName] = useState<string | null>(null);
   const { ref, onChange, ...rest } = register("recipeImage");
-
-  console.log("fileName", fileName);
-
   let displayValue = "No file chosen";
 
   if (fileName) {
