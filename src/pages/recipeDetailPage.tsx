@@ -2,6 +2,7 @@ import { supabase } from "@/clients/supabaseClient";
 import { Button } from "@/components/ui/button";
 import type { RecipeWithTags } from "@/types/recipeWithTags";
 import type { Tag } from "@/types/supabase";
+import { groupIngredients } from "@/utils/ingredients";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
@@ -105,11 +106,24 @@ const RecipeDetailPage = () => {
       {recipe.ingredients && (
         <div>
           <h2 className="text-xl font-semibold">Ingredients</h2>
-          <ul className="mt-2 space-y-1 list-disc list-inside text-sm">
-            {(recipe.ingredients as string[]).map((ingredient, i) => (
-              <li key={i}>{ingredient}</li>
-            ))}
-          </ul>
+          <div className="mt-2 space-y-4">
+            {groupIngredients(recipe.ingredients as string[]).map(
+              (group, gi) => (
+                <div key={gi}>
+                  {group.heading && (
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">
+                      {group.heading}
+                    </h3>
+                  )}
+                  <ul className="space-y-1 list-disc list-inside text-sm">
+                    {group.items.map((ingredient, i) => (
+                      <li key={i}>{ingredient}</li>
+                    ))}
+                  </ul>
+                </div>
+              ),
+            )}
+          </div>
         </div>
       )}
 

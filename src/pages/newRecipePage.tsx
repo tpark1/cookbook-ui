@@ -72,7 +72,7 @@ const NewRecipePage = () => {
   const onSubmit = async (data: RecipeForm) => {
     console.log("Form Data:", data);
     let imageUrl = "";
-    if (data.recipeImage) {
+    if (data.recipeImage && data.recipeImage.length > 0) {
       imageUrl = await uploadRecipeImage(data.recipeImage[0]);
     }
 

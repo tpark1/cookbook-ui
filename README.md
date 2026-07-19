@@ -9,7 +9,6 @@ todo list
 - If yield includes characters (instead of just numbers, then add "servings" otherwise leave as is like in the case of 1 loaf)
 - Replace vanilla html with components
 - Don't try to make a link if source isn't a link
-- Validation on cook and prep time and yield inputs (number inputs)
 - Testing adding tags on mobile
 - Support for multiple pics
 - Show preview of pic

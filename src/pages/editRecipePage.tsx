@@ -67,7 +67,7 @@ const EditRecipePage = () => {
           ? data.directions.map((step: string) => ({ step }))
           : [{ step: "" }],
         tags: existingTags,
-        source: data.source,
+        source: data.sources,
       });
 
       // Store existing image URL so we can keep it if no new image is picked
@@ -199,8 +199,7 @@ const EditRecipePage = () => {
 
       <Label className="block font-medium">Yield</Label>
       <input
-        type="number"
-        {...register("yield", { min: 0, valueAsNumber: true })}
+        {...register("yield", {})}
         className={`w-full border p-2 rounded ${errors.yield ? "border-red-500" : "border-gray-300"}`}
       />
 
